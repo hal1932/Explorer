@@ -1,9 +1,10 @@
 # encoding: utf-8
-from lib import *
-
+import exceptions
 import glob
 import os
-import exceptions
+
+from lib import *
+import file_list
 
 
 class ExplorerWindow(QMainWindow):
@@ -67,6 +68,16 @@ class ExplorerWindow(QMainWindow):
         operation_layout.addWidget(address_text)
         operation_layout.addWidget(search_text)
 
+        # file list
+        self.__file_list = file_list.FileListView()
+        root_layout.addWidget(self.__file_list)
+
+        # status bar
+        status_layout = QHBoxLayout()
+        root_layout.addLayout(status_layout)
+
+        status_layout.addWidget(QPushButton())
+
         self.__back_button = back_button
         self.__forward_button = forward_button
 
@@ -101,6 +112,6 @@ class ExplorerWindow(QMainWindow):
         directory = self.__history[self.__current_history_index]
 
         for entry in glob.iglob(os.path.join(directory, '*')):
-            print(entry)
+            self.__file_list.add_item(entry)
 
         self.__update_history_button()
