@@ -111,7 +111,10 @@ class ExplorerWindow(QMainWindow):
     def __update_view(self):
         directory = self.__history[self.__current_history_index]
 
+        self.__file_list.clear()
         for entry in glob.iglob(os.path.join(directory, '*')):
+            #print(entry)
             self.__file_list.add_item(entry)
 
+        self.__file_list.invalidate()
         self.__update_history_button()
