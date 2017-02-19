@@ -1,10 +1,12 @@
 # encoding: utf-8
+from lib import *
+
+import file_list
+
 import exceptions
 import glob
 import os
-
-from lib import *
-import file_list
+import functools
 
 
 class ExplorerWindow(QMainWindow):
@@ -23,8 +25,14 @@ class ExplorerWindow(QMainWindow):
             self.change_directory(directory)
 
     def change_directory(self, directory):
+        directory = os.path.abspath(directory)
+
         if not os.path.isdir(directory):
             raise exceptions.IOError(directory)
+
+        if len(self.__history) > 0:
+            if directory == self.__history[self.__current_history_index]:
+                return
 
         if self.__current_history_index < len(self.__history) - 1:
             self.__history = self.__history[:self.__current_history_index]
@@ -59,6 +67,10 @@ class ExplorerWindow(QMainWindow):
 
         address_text = QLineEdit()
         address_text.setMinimumWidth(200)
+        address_text.returnPressed.connect(
+            lambda: self.change_directory(address_text.text())
+            # functools.partial(self.change_directory, address_text.text())
+        )
 
         search_text = QLineEdit()
         search_text.setMaximumWidth(200)
@@ -68,9 +80,18 @@ class ExplorerWindow(QMainWindow):
         operation_layout.addWidget(address_text)
         operation_layout.addWidget(search_text)
 
-        # file list
-        self.__file_list = file_list.FileListView()
-        root_layout.addWidget(self.__file_list)
+        # file view
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        root_layout.addWidget(splitter)
+
+        directory_tree = QTreeView()
+        directory_tree.setMaximumWidth(200)
+        splitter.addWidget(directory_tree)
+
+        fileitem_list = file_list.FileListView()
+        fileitem_list.setMinimumWidth(200)
+        splitter.addWidget(fileitem_list)
 
         # status bar
         status_layout = QHBoxLayout()
@@ -80,6 +101,8 @@ class ExplorerWindow(QMainWindow):
 
         self.__back_button = back_button
         self.__forward_button = forward_button
+        self.__address_text = address_text
+        self.__file_list = fileitem_list
 
     def __setup_menu(self):
         menu_bar = QMenuBar()
@@ -99,22 +122,18 @@ class ExplorerWindow(QMainWindow):
         self.__current_history_index += 1
         self.__update_view()
 
-    def __update_history_button(self):
-        print(self.__history, self.__current_history_index)
-
-        enable_backword = self.__current_history_index > 0
-        self.__back_button.setEnabled(enable_backword)
-
-        enable_forward = self.__current_history_index < len(self.__history) - 1
-        self.__forward_button.setEnabled(enable_forward)
-
     def __update_view(self):
         directory = self.__history[self.__current_history_index]
 
         self.__file_list.clear()
         for entry in glob.iglob(os.path.join(directory, '*')):
-            #print(entry)
             self.__file_list.add_item(entry)
-
         self.__file_list.invalidate()
-        self.__update_history_button()
+
+        enable_backward = self.__current_history_index > 0
+        self.__back_button.setEnabled(enable_backward)
+
+        enable_forward = self.__current_history_index < len(self.__history) - 1
+        self.__forward_button.setEnabled(enable_forward)
+
+        self.__address_text.setText(directory)

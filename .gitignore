@@ -47,3 +47,7 @@ Temporary Items
 .apdisk
 *.pyc
 .idea/inspectionProfiles/Project_Default.xml
+.idea/workspace.xml
+.idea/dictionaries/yuta.xml
+.idea/workspace.xml
+.idea/vcs.xml
