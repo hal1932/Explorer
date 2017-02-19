@@ -52,18 +52,31 @@ class ExplorerWindow(QMainWindow):
 
         root_layout = QVBoxLayout()
         root_layout.setAlignment(Qt.AlignTop)
-        root_layout.setContentsMargins(5, 5, 5, 5)
+        root_layout.setSpacing(3)
         root_widget.setLayout(root_layout)
 
         # operation menu
         operation_layout = QHBoxLayout()
         root_layout.addLayout(operation_layout)
 
-        back_button = image_button.ImageButton('resources/Backward_32x.png')
+        # back button
+        back_button = image_widget.ImageButton('resources/Backward_32x.png')
         back_button.clicked.connect(self.__go_backward)
+        operation_layout.addWidget(back_button)
 
-        forward_button = image_button.ImageButton('resources/Forward_32x.png')
+        # forward button
+        forward_button = image_widget.ImageButton('resources/Forward_32x.png')
         forward_button.clicked.connect(self.__go_forward)
+        operation_layout.addWidget(forward_button)
+
+        # address bar
+        address_layout = QHBoxLayout()
+        address_layout.setSpacing(0)
+        operation_layout.addLayout(address_layout)
+
+        address_icon = image_widget.ImageLabel('resources/Folder_16x.png')
+        address_icon.setMargin(3)
+        address_layout.addWidget(address_icon)
 
         address_text = QLineEdit()
         address_text.setMinimumWidth(200)
@@ -71,14 +84,41 @@ class ExplorerWindow(QMainWindow):
             lambda: self.change_directory(address_text.text())
             # functools.partial(self.change_directory, address_text.text())
         )
+        address_layout.addWidget(address_text)
+
+        # file view switcher
+        view_switcher_layout = QHBoxLayout()
+        operation_layout.addLayout(view_switcher_layout)
+
+        view_switcher = QButtonGroup()
+        view_switcher.setExclusive(True)
+        view_switcher.buttonClicked.connect(self.__change_fileview_type)
+
+        file_view_types = {
+            'list': 'resources/ListBox_24x.png',
+            'thumbnail': 'resources/Image_32x.png',
+        }
+        for type_name, image_path in file_view_types.items():
+            button = image_widget.ImageButton(image_path)
+            button.setCheckable(True)
+            button.arguments = {'type': type_name}
+
+            view_switcher.addButton(button)
+            view_switcher_layout.addWidget(button)
+
+        # search filter
+        search_layout = QHBoxLayout()
+        search_layout.setSpacing(0)
+        search_layout.setContentsMargins(0, 0, 0, 0)
+        operation_layout.addLayout(search_layout)
 
         search_text = QLineEdit()
         search_text.setMaximumWidth(200)
+        search_layout.addWidget(search_text)
 
-        operation_layout.addWidget(back_button)
-        operation_layout.addWidget(forward_button)
-        operation_layout.addWidget(address_text)
-        operation_layout.addWidget(search_text)
+        search_icon = image_widget.ImageLabel('resources/Search_16x.png')
+        search_icon.setMargin(3)
+        search_layout.addWidget(search_icon)
 
         # file view
         splitter = QSplitter(Qt.Horizontal)
@@ -97,12 +137,15 @@ class ExplorerWindow(QMainWindow):
         status_layout = QHBoxLayout()
         root_layout.addLayout(status_layout)
 
-        status_layout.addWidget(QPushButton())
+        status_text = QLabel()
+        status_layout.addWidget(status_text)
 
         self.__back_button = back_button
         self.__forward_button = forward_button
         self.__address_text = address_text
         self.__file_list = fileitem_list
+        self.__status_text = status_text
+        self.__file_view_switcher = view_switcher
 
     def __setup_menu(self):
         menu_bar = QMenuBar()
@@ -122,6 +165,10 @@ class ExplorerWindow(QMainWindow):
         self.__current_history_index += 1
         self.__update_view()
 
+    def __change_fileview_type(self, which):
+        type_name = which.arguments['type']
+        self.__file_list.change_view(type_name)
+
     def __update_view(self):
         directory = self.__history[self.__current_history_index]
 
@@ -137,3 +184,5 @@ class ExplorerWindow(QMainWindow):
         self.__forward_button.setEnabled(enable_forward)
 
         self.__address_text.setText(directory)
+
+        self.__status_text.setText(u'{}個の項目'.format(self.__file_list.count))

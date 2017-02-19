@@ -11,7 +11,7 @@ class FileListModel(QAbstractListModel):
 
         self.clear()
 
-    def rowCount(self, parent):
+    def rowCount(self, parent=None):
         return len(self.__items)
 
     def data(self, index, role=Qt.DisplayRole):

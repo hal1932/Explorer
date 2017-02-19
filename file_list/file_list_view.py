@@ -7,10 +7,12 @@ import delegate
 
 class FileListView(QListView):
 
+    @property
+    def count(self):
+        return self.model().rowCount()
+
     def __init__(self, parent=None):
         super(FileListView, self).__init__(parent)
-
-        self.__items = []
 
         self.setModel(model.FileListModel())
         self.setItemDelegate(delegate.FileItemDelegate())
@@ -20,6 +22,9 @@ class FileListView(QListView):
 
     def add_item(self, item):
         self.model().add_item(item)
+
+    def change_view(self, type_name):
+        print(type_name)
 
     def invalidate(self):
         m = self.model()
