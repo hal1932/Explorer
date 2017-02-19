@@ -7,6 +7,13 @@ import exceptions
 import glob
 import os
 import functools
+import itertools
+
+
+if sys.platform == 'win32':
+    FILESYSTEM_ENCODING = 'shift-jis'
+else:
+    raise EnvironmentError('{} is not supported'.format(sys.platform))
 
 
 class ExplorerWindow(QMainWindow):
@@ -23,6 +30,8 @@ class ExplorerWindow(QMainWindow):
 
         if directory is not None:
             self.change_directory(directory)
+
+        self.change_fileview_type('list')
 
     def change_directory(self, directory):
         directory = os.path.abspath(directory)
@@ -41,6 +50,20 @@ class ExplorerWindow(QMainWindow):
         self.__current_history_index += 1
 
         self.__update_view()
+
+    def change_fileview_type(self, type_name):
+        if self.__file_list.view_type == type_name:
+            return
+
+        button = next(
+            itertools.ifilter(
+                lambda x: x.arguments['type'] == type_name,
+                self.__file_view_switcher.buttons()),
+            None)
+        if not button.isDown():
+            button.setChecked(True)
+
+        self.__file_list.change_view(type_name)
 
     def __setup_ui(self):
         self.resize(800, 600)
@@ -92,7 +115,9 @@ class ExplorerWindow(QMainWindow):
 
         view_switcher = QButtonGroup()
         view_switcher.setExclusive(True)
-        view_switcher.buttonClicked.connect(self.__change_fileview_type)
+        view_switcher.buttonClicked.connect(
+            lambda x: self.change_fileview_type(x.arguments['type'])
+        )
 
         file_view_types = {
             'list': 'resources/ListBox_24x.png',
@@ -165,16 +190,12 @@ class ExplorerWindow(QMainWindow):
         self.__current_history_index += 1
         self.__update_view()
 
-    def __change_fileview_type(self, which):
-        type_name = which.arguments['type']
-        self.__file_list.change_view(type_name)
-
     def __update_view(self):
         directory = self.__history[self.__current_history_index]
 
         self.__file_list.clear()
         for entry in glob.iglob(os.path.join(directory, '*')):
-            self.__file_list.add_item(entry)
+            self.__file_list.add_item(entry.decode(FILESYSTEM_ENCODING))
         self.__file_list.invalidate()
 
         enable_backward = self.__current_history_index > 0

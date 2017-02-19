@@ -2,10 +2,10 @@
 from lib import *
 
 
-class FileItemDelegate(QItemDelegate):
+class FileListDelegate(QItemDelegate):
 
     def __init__(self, parent=None):
-        super(FileItemDelegate, self).__init__(parent)
+        super(FileListDelegate, self).__init__(parent)
 
     def paint(self, painter, option, index):
         item = index.data(Qt.DisplayRole)

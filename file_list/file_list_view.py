@@ -2,7 +2,8 @@
 from lib import *
 
 import model
-import delegate
+import list_delegate
+import thumbnail_delegate
 
 
 class FileListView(QListView):
@@ -11,11 +12,14 @@ class FileListView(QListView):
     def count(self):
         return self.model().rowCount()
 
+    @property
+    def view_type(self):
+        return self.__view_type
+
     def __init__(self, parent=None):
         super(FileListView, self).__init__(parent)
-
+        self.__view_type = None
         self.setModel(model.FileListModel())
-        self.setItemDelegate(delegate.FileItemDelegate())
 
     def clear(self):
         self.model().clear()
@@ -24,7 +28,17 @@ class FileListView(QListView):
         self.model().add_item(item)
 
     def change_view(self, type_name):
-        print(type_name)
+        if self.__view_type == type_name:
+            return
+
+        if type_name == 'list':
+            self.setItemDelegate(list_delegate.FileListDelegate())
+        elif type_name == 'thumbnail':
+            self.setItemDelegate(thumbnail_delegate.FileThumbnailDelegate())
+        else:
+            raise ValueError('invalid fileview type: {}'.format(type_name))
+
+        self.__view_type = type_name
 
     def invalidate(self):
         m = self.model()
