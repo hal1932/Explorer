@@ -33,8 +33,16 @@ class FileListView(QListView):
 
         if type_name == 'list':
             self.setItemDelegate(list_delegate.FileListDelegate())
+            self.setViewMode(QListView.ListMode)
+            self.setWrapping(False)
+            self.setResizeMode(QListView.Fixed)
+            self.setSpacing(1)
         elif type_name == 'thumbnail':
             self.setItemDelegate(thumbnail_delegate.FileThumbnailDelegate())
+            self.setViewMode(QListView.IconMode)
+            self.setWrapping(True)
+            self.setResizeMode(QListView.Adjust)
+            self.setSpacing(3)
         else:
             raise ValueError('invalid fileview type: {}'.format(type_name))
 

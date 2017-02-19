@@ -1,6 +1,7 @@
 # encoding: utf-8
 from __future__ import print_function
 
+import qt
 import image_widget
 
 from PySide.QtCore import *

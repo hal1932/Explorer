@@ -45,6 +45,7 @@ class ExplorerWindow(QMainWindow):
 
         if self.__current_history_index < len(self.__history) - 1:
             self.__history = self.__history[:self.__current_history_index]
+            self.__current_history_index = len(self.__history) - 1
 
         self.__history.append(directory)
         self.__current_history_index += 1
