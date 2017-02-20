@@ -17,9 +17,9 @@ class FileThumbnailDelegate(QItemDelegate):
         self.__container_size = None
         self.set_thumbnail_length(100)
 
-    def set_thumbnail_length(self, length):
-        self.__thumbnail_size = QSize(length, length)
-        self.__container_size = QSize(length, length + 30)
+    def set_thumbnail_length(self, edge_length):
+        self.__thumbnail_size = QSize(edge_length, edge_length)
+        self.__container_size = QSize(edge_length, edge_length + 30)
 
     def sizeHint(self, option, index):
         return self.__container_size
@@ -87,4 +87,4 @@ class _ThumbnailCache(object):
     __initialized = False
     __thumbnail_size = None
     __directory_thumbnail = None
-    __image_exts = (u'.jpg', u'.png', u'.gif', u'.bmp')
+    __image_exts = (u'.png', u'.jpg', u'.jpeg', u'.gif', u'.bmp')
