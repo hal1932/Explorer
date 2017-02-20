@@ -46,13 +46,13 @@ def fitting_scale_down(container, target):
     ch, th = container.height(), target.height()
 
     if cw < tw:
-        scale = (tw - cw) / float(tw)
+        scale = float(cw) / tw
         tw = cw
-        th = ch * scale
+        th *= scale
 
     if ch < th:
-        scale = (th - ch) / float(th)
+        scale = float(ch) / th
         th = ch
-        tw = cw * scale
+        tw *= scale
 
     return QSize(tw, th)

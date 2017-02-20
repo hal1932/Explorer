@@ -17,7 +17,7 @@ class ThumbnailCache(object):
     def load(self, path, size):
         if os.path.splitext(path)[1].lower() in ThumbnailCache.__image_exts:
             pixmap = QPixmap(path)
-            pixmap_size = qt.fitting_scale_down(pixmap.size(), size)
+            pixmap_size = qt.fitting_scale_down(size, pixmap.size())
             pixmap = pixmap.scaled(pixmap_size)
         else:
             icon = qt.get_file_icon(path)
