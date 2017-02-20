@@ -59,17 +59,17 @@ class ExplorerWindow(QMainWindow):
         root_layout.addLayout(operation_layout)
 
         # back button
-        back_button = image_widget.ImageButton('resources/Backward_32x.png')
+        back_button = widget.ImageButton('resources/Backward_32x.png')
         back_button.clicked.connect(self.__model.go_backward)
         operation_layout.addWidget(back_button)
 
         # forward button
-        forward_button = image_widget.ImageButton('resources/Forward_32x.png')
+        forward_button = widget.ImageButton('resources/Forward_32x.png')
         forward_button.clicked.connect(self.__model.go_forward)
         operation_layout.addWidget(forward_button)
 
         # go up button
-        up_button = image_widget.ImageButton('resources/Upload_32x.png')
+        up_button = widget.ImageButton('resources/Upload_32x.png')
         up_button.clicked.connect(self.__model.go_up)
         operation_layout.addWidget(up_button)
 
@@ -78,7 +78,7 @@ class ExplorerWindow(QMainWindow):
         address_layout.setSpacing(0)
         operation_layout.addLayout(address_layout)
 
-        address_icon = image_widget.ImageLabel('resources/Folder_16x.png')
+        address_icon = widget.ImageLabel('resources/Folder_16x.png')
         address_icon.setMargin(3)
         address_layout.addWidget(address_icon)
 
@@ -104,7 +104,7 @@ class ExplorerWindow(QMainWindow):
             'thumbnail': 'resources/Image_32x.png',
         }
         for type_name, image_path in file_view_types.items():
-            button = image_widget.ImageButton(image_path)
+            button = widget.ImageButton(image_path)
             button.setCheckable(True)
             button.arguments = {'type': type_name}
 
@@ -124,7 +124,7 @@ class ExplorerWindow(QMainWindow):
         )
         search_layout.addWidget(search_text)
 
-        search_icon = image_widget.ImageLabel('resources/Search_16x.png')
+        search_icon = widget.ImageLabel('resources/Search_16x.png')
         search_icon.setMargin(3)
         search_layout.addWidget(search_icon)
 

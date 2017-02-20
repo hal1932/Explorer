@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 import qt
-import image_widget
+import widget
 import filesystem
 import sequence
 
