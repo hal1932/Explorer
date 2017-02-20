@@ -194,9 +194,20 @@ class ExplorerWindow(QMainWindow):
     def __update_view(self):
         directory = self.__history[self.__current_history_index]
 
+        directories = []
+        files = []
+        for path in glob.iglob(os.path.join(directory, '*')):
+            path = path.decode(FILESYSTEM_ENCODING)
+            if os.path.isdir(path):
+                directories.append(path)
+            else:
+                files.append(path)
+
         self.__file_list.clear()
-        for entry in glob.iglob(os.path.join(directory, '*')):
-            self.__file_list.add_item(entry.decode(FILESYSTEM_ENCODING))
+        for path in directories:
+            self.__file_list.add_item(path)
+        for path in files:
+            self.__file_list.add_item(path)
         self.__file_list.invalidate()
 
         enable_backward = self.__current_history_index > 0
