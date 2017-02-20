@@ -15,11 +15,11 @@ class FileThumbnailDelegate(QItemDelegate):
 
         self.__thumbnail_size = None
         self.__container_size = None
-        self.set_thumbnail_size(QSize(100, 100))
+        self.set_thumbnail_length(100)
 
-    def set_thumbnail_size(self, size):
-        self.__thumbnail_size = size
-        self.__container_size = QSize(size.width(), size.height() + 30)
+    def set_thumbnail_length(self, length):
+        self.__thumbnail_size = QSize(length, length)
+        self.__container_size = QSize(length, length + 30)
 
     def sizeHint(self, option, index):
         return self.__container_size

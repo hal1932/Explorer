@@ -41,7 +41,7 @@ class FileListView(QListView):
             self.setSpacing(1)
         elif type_name == 'thumbnail':
             delegate = thumbnail_delegate.FileThumbnailDelegate()
-            delegate.set_thumbnail_size(QSize(100, 100))
+            delegate.set_thumbnail_length(100)
             self.setItemDelegate(delegate)
 
             self.setViewMode(QListView.IconMode)
