@@ -8,10 +8,12 @@ import glob
 import os
 import functools
 import itertools
+import subprocess
 
 
 if sys.platform == 'win32':
     FILESYSTEM_ENCODING = 'shift-jis'
+    FILEOPEN_COMMAND = 'explorer'
 else:
     raise EnvironmentError('{} is not supported'.format(sys.platform))
 
@@ -160,7 +162,7 @@ class ExplorerWindow(QMainWindow):
         fileitem_list = file_list.FileListView()
         fileitem_list.setMinimumWidth(200)
         fileitem_list.open_requested.connect(
-            lambda path: self.change_directory(path)
+            lambda path: self.__select_path(path)
         )
         splitter.addWidget(fileitem_list)
 
@@ -226,3 +228,9 @@ class ExplorerWindow(QMainWindow):
         self.__address_text.setText(directory)
 
         self.__status_text.setText(u'{}個の項目'.format(self.__file_list.count))
+
+    def __select_path(self, path):
+        if os.path.isdir(path):
+            self.change_directory(path)
+        else:
+            subprocess.call('"{}" "{}"'.format(FILEOPEN_COMMAND, path), shell=True)
