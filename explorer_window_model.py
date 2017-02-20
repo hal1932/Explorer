@@ -30,15 +30,15 @@ class ExplorerWindowModel(QObject):
 
     def go_backward(self):
         self.__current_history_index -= 1
+
         self.directory_changed.emit(self.current_directory)
-        self.enable_backward_changed.emit(self.__current_history_index > 0)
-        self.enable_up_changed.emit(self.__can_go_up())
+        self.__on_history_changed()
 
     def go_forward(self):
         self.__current_history_index += 1
+
         self.directory_changed.emit(self.current_directory)
-        self.enable_forward_changed.emit(self.__current_history_index < len(self.__history) - 1)
-        self.enable_up_changed.emit(self.__can_go_up())
+        self.__on_history_changed()
 
     def go_up(self):
         current_path = self.__history[self.__current_history_index]
@@ -67,10 +67,7 @@ class ExplorerWindowModel(QObject):
         self.__current_history_index += 1
 
         self.directory_changed.emit(directory)
-
-        self.enable_backward_changed.emit(self.__current_history_index > 0)
-        self.enable_forward_changed.emit(self.__current_history_index < len(self.__history) - 1)
-        self.enable_up_changed.emit(self.__can_go_up())
+        self.__on_history_changed()
 
     def select_path(self, path):
         if os.path.isdir(path):
@@ -82,3 +79,8 @@ class ExplorerWindowModel(QObject):
         current_path = self.__history[self.__current_history_index]
         parent_path = os.path.dirname(current_path)
         return current_path != parent_path
+
+    def __on_history_changed(self):
+        self.enable_backward_changed.emit(self.__current_history_index > 0)
+        self.enable_forward_changed.emit(self.__current_history_index < len(self.__history) - 1)
+        self.enable_up_changed.emit(self.__can_go_up())
