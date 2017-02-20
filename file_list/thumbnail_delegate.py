@@ -1,6 +1,8 @@
 # encoding: utf-8
 from lib import *
 
+import thumbnail_cache
+
 import os
 import threading
 import Queue
@@ -11,7 +13,7 @@ class FileThumbnailDelegate(QItemDelegate):
     def __init__(self, parent=None):
         super(FileThumbnailDelegate, self).__init__(parent)
 
-        self.__thumbnail_caches = {}
+        self.__thumbnail_cache = thumbnail_cache.ThumbnailCache()
 
         self.__thumbnail_size = None
         self.__container_size = None
@@ -27,17 +29,14 @@ class FileThumbnailDelegate(QItemDelegate):
     def paint(self, painter, option, index):
         path = index.data(Qt.DisplayRole)
 
-        if path not in self.__thumbnail_caches:
-            self.__thumbnail_caches[path] = _ThumbnailCache(self.__thumbnail_size)
+        pixmap = self.__thumbnail_cache.get_cached_pixmap(path)
+        if pixmap is None:
+            pixmap = self.__thumbnail_cache.load(path, self.__thumbnail_size)
 
-        cache = self.__thumbnail_caches[path]
-        if cache.pixmap is None:
-            cache.load(path)
-
-        if cache.pixmap is not None:
-            image_rect = qt.resize_rect(option.rect, cache.pixmap.size())
+        if pixmap is not None:
+            image_rect = qt.resize_rect(option.rect, pixmap.size())
             image_rect = qt.center_rect(option.rect, image_rect)
-            painter.drawPixmap(image_rect, cache.pixmap)
+            painter.drawPixmap(image_rect, pixmap)
         else:
             brush = QBrush(QColor('aliceblue'))
             painter.setBrush(brush)
@@ -55,36 +54,3 @@ class FileThumbnailDelegate(QItemDelegate):
         painter.drawText(name_rect, Qt.AlignCenter | Qt.AlignBottom, os.path.basename(path))
 
 
-class _ThumbnailCache(object):
-
-    @property
-    def pixmap(self):
-        return self.__pixmap
-
-    def __init__(self, size):
-        _ThumbnailCache.__static_init__(size)
-        self.__pixmap = None
-
-    @staticmethod
-    def __static_init__(size):
-        if _ThumbnailCache.__initialized:
-            return
-        _ThumbnailCache.__directory_thumbnail = QPixmap('resources/Folder_64x.png').scaled(size)
-        _ThumbnailCache.__thumbnail_size = size
-
-    def load(self, path):
-        if os.path.isdir(path):
-            self.__pixmap = _ThumbnailCache.__directory_thumbnail
-        elif os.path.splitext(path)[1].lower() in _ThumbnailCache.__image_exts:
-            pixmap = QPixmap(path)
-            pixmap_size = qt.fitting_scale_down(pixmap.size(), _ThumbnailCache.__thumbnail_size)
-            self.__pixmap = pixmap.scaled(pixmap_size)
-        else:
-            icon = qt.get_file_icon(path)
-            size = icon.actualSize(_ThumbnailCache.__thumbnail_size)
-            self.__pixmap = icon.pixmap(size)
-
-    __initialized = False
-    __thumbnail_size = None
-    __directory_thumbnail = None
-    __image_exts = (u'.png', u'.jpg', u'.jpeg', u'.gif', u'.bmp')

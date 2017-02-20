@@ -1,6 +1,8 @@
 # encoding: utf-8
 from lib import *
 
+import thumbnail_cache
+
 import os
 
 
@@ -8,18 +10,19 @@ class FileListDelegate(QItemDelegate):
 
     def __init__(self, parent=None):
         super(FileListDelegate, self).__init__(parent)
+        self.__thumbnail_size = QSize(16, 16)
+        self.__thumbnail_cache = thumbnail_cache.ThumbnailCache()
 
     def paint(self, painter, option, index):
         item = index.data(Qt.DisplayRole)
 
-        image_rect = qt.resize_rect(option.rect, QSize(16, 16))
-        name_rect = qt.move_rect(option.rect, QPoint(16, 0))
+        image_rect = qt.resize_rect(option.rect, self.__thumbnail_size)
+        name_rect = qt.move_rect(option.rect, QPoint(self.__thumbnail_size.width(), 0))
 
-        if os.path.isdir(item):
-            thumbnail_path = 'resources/Folder_16x.png'
-        else:
-            thumbnail_path = 'resources/FileSystemEditor_16x.png'
-        pixmap = QPixmap(thumbnail_path)
+        pixmap = self.__thumbnail_cache.get_cached_pixmap(item)
+        if pixmap is None:
+            pixmap = self.__thumbnail_cache.load(item, self.__thumbnail_size)
+
         painter.drawPixmap(image_rect, pixmap)
 
         palette = option.palette
