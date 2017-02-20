@@ -8,6 +8,8 @@ import thumbnail_delegate
 
 class FileListView(QListView):
 
+    open_requested = Signal(str)
+
     @property
     def count(self):
         return self.model().rowCount()
@@ -20,6 +22,10 @@ class FileListView(QListView):
         super(FileListView, self).__init__(parent)
         self.__view_type = None
         self.setModel(model.FileListModel())
+
+        self.doubleClicked.connect(
+            lambda index: self.open_requested.emit(index.data(Qt.DisplayRole))
+        )
 
     def clear(self):
         self.model().clear()

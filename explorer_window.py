@@ -44,11 +44,13 @@ class ExplorerWindow(QMainWindow):
                 return
 
         if self.__current_history_index < len(self.__history) - 1:
-            self.__history = self.__history[:self.__current_history_index]
+            self.__history = self.__history[:self.__current_history_index + 1]
             self.__current_history_index = len(self.__history) - 1
 
         self.__history.append(directory)
         self.__current_history_index += 1
+
+        print(self.__history, self.__current_history_index)
 
         self.__update_view()
 
@@ -157,6 +159,9 @@ class ExplorerWindow(QMainWindow):
 
         fileitem_list = file_list.FileListView()
         fileitem_list.setMinimumWidth(200)
+        fileitem_list.open_requested.connect(
+            lambda path: self.change_directory(path)
+        )
         splitter.addWidget(fileitem_list)
 
         # status bar
@@ -197,7 +202,9 @@ class ExplorerWindow(QMainWindow):
         directories = []
         files = []
         for path in glob.iglob(os.path.join(directory, '*')):
-            path = path.decode(FILESYSTEM_ENCODING)
+            if not isinstance(path, unicode):
+                path = path.decode(FILESYSTEM_ENCODING)
+
             if os.path.isdir(path):
                 directories.append(path)
             else:
