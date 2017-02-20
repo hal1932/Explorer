@@ -33,6 +33,10 @@ class FileListView(QListView):
     def add_item(self, item):
         self.model().add_item(item)
 
+    def filter_items(self, needle):
+        self.model().filter_items(needle)
+        self.invalidate()
+
     def change_view(self, type_name):
         if self.__view_type == type_name:
             return

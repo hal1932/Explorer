@@ -147,6 +147,9 @@ class ExplorerWindow(QMainWindow):
 
         search_text = QLineEdit()
         search_text.setMaximumWidth(200)
+        search_text.returnPressed.connect(
+            lambda: self.__file_list.filter_items(search_text.text())
+        )
         search_layout.addWidget(search_text)
 
         search_icon = image_widget.ImageLabel('resources/Search_16x.png')
