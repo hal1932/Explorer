@@ -1,12 +1,18 @@
 # encoding: utf-8
 from PySide.QtCore import *
+from PySide.QtGui import *
 
 import math
 
 
+def get_file_icon(path):
+    file_info = QFileInfo(path)
+    return QFileIconProvider().icon(file_info)
+
+
 def move_rect(rect, position):
     return QRect(
-        rect.left(), rect.top(),
+        position.x(), position.y(),
         rect.width(), rect.height()
     )
 

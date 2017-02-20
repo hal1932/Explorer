@@ -10,16 +10,25 @@ class FileThumbnailDelegate(QItemDelegate):
 
     def __init__(self, parent=None):
         super(FileThumbnailDelegate, self).__init__(parent)
+
         self.__thumbnail_caches = {}
 
+        self.__thumbnail_size = None
+        self.__container_size = None
+        self.set_thumbnail_size(QSize(100, 100))
+
+    def set_thumbnail_size(self, size):
+        self.__thumbnail_size = size
+        self.__container_size = QSize(size.width(), size.height() + 30)
+
     def sizeHint(self, option, index):
-        return QSize(100, 130)
+        return self.__container_size
 
     def paint(self, painter, option, index):
         path = index.data(Qt.DisplayRole)
 
         if path not in self.__thumbnail_caches:
-            self.__thumbnail_caches[path] = _ThumbnailCache(QSize(100, 100))
+            self.__thumbnail_caches[path] = _ThumbnailCache(self.__thumbnail_size)
 
         cache = self.__thumbnail_caches[path]
         if cache.pixmap is None:
@@ -36,10 +45,12 @@ class FileThumbnailDelegate(QItemDelegate):
             pen.setWidth(0)
             painter.setPen(pen)
 
-            image_rect = qt.resize_rect(option.rect, 100, 100)
+            image_rect = qt.resize_rect(option.rect, self.__thumbnail_size)
             painter.drawRect(image_rect)
 
-        name_rect = QRect(option.rect.left(), option.rect.top() + 100, 100, 30)
+        name_rect = QRect(
+            option.rect.left(), option.rect.top() + self.__thumbnail_size.height(),
+            self.__container_size.width(), 30)
         painter.setPen(None)
         painter.drawText(name_rect, Qt.AlignCenter | Qt.AlignBottom, os.path.basename(path))
 
@@ -69,8 +80,7 @@ class _ThumbnailCache(object):
             pixmap_size = qt.fitting_scale_down(pixmap.size(), _ThumbnailCache.__thumbnail_size)
             self.__pixmap = pixmap.scaled(pixmap_size)
         else:
-            file_info = QFileInfo(path)
-            icon = QFileIconProvider().icon(file_info)
+            icon = qt.get_file_icon(path)
             size = icon.actualSize(_ThumbnailCache.__thumbnail_size)
             self.__pixmap = icon.pixmap(size)
 

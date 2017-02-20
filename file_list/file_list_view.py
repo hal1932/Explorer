@@ -32,13 +32,18 @@ class FileListView(QListView):
             return
 
         if type_name == 'list':
-            self.setItemDelegate(list_delegate.FileListDelegate())
+            delegate = list_delegate.FileListDelegate()
+            self.setItemDelegate(delegate)
+
             self.setViewMode(QListView.ListMode)
             self.setWrapping(False)
             self.setResizeMode(QListView.Fixed)
             self.setSpacing(1)
         elif type_name == 'thumbnail':
-            self.setItemDelegate(thumbnail_delegate.FileThumbnailDelegate())
+            delegate = thumbnail_delegate.FileThumbnailDelegate()
+            delegate.set_thumbnail_size(QSize(100, 100))
+            self.setItemDelegate(delegate)
+
             self.setViewMode(QListView.IconMode)
             self.setWrapping(True)
             self.setResizeMode(QListView.Adjust)
