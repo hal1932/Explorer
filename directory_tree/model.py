@@ -4,7 +4,6 @@ from lib import *
 import platform
 
 import os
-import glob
 
 
 class DirectoryTreeItem(QStandardItem):

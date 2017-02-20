@@ -1,63 +1,41 @@
 # encoding: utf-8
 from lib import *
 
-import platform
 import file_list
 import directory_tree
-
-import exceptions
-import glob
-import os
-import functools
-import itertools
-import subprocess
+import explorer_window_model
 
 
 class ExplorerWindow(QMainWindow):
 
     def __init__(self, parent=None, directory=None):
         super(ExplorerWindow, self).__init__(parent)
+
+        self.__model = explorer_window_model.ExplorerWindowModel()
         self.__setup_ui()
 
-        self.__history = []
-        self.__current_history_index = -1
+        self.__model.directory_changed.connect(self.__update_view)
+        self.__model.enable_backward_changed.connect(lambda enabled: self.__back_button.setEnabled(enabled))
+        self.__model.enable_forward_changed.connect(lambda enabled: self.__forward_button.setEnabled(enabled))
+        self.__model.enable_up_changed.connect(lambda enabled: self.__up_button.setEnabled(enabled))
 
         self.__back_button.setEnabled(False)
         self.__forward_button.setEnabled(False)
 
-        if directory is not None:
-            self.change_directory(directory)
-
         self.change_fileview_type('list')
 
-    def change_directory(self, directory):
-        directory = os.path.abspath(directory)
-
-        if not os.path.isdir(directory):
-            raise exceptions.IOError(directory)
-
-        if len(self.__history) > 0:
-            if directory == self.__history[self.__current_history_index]:
-                return
-
-        if self.__current_history_index < len(self.__history) - 1:
-            self.__history = self.__history[:self.__current_history_index + 1]
-            self.__current_history_index = len(self.__history) - 1
-
-        self.__history.append(directory)
-        self.__current_history_index += 1
-
-        self.__update_view()
+        self.__model.change_directory(directory)
 
     def change_fileview_type(self, type_name):
         if self.__file_list.view_type == type_name:
             return
 
-        button = next(
-            itertools.ifilter(
-                lambda x: x.arguments['type'] == type_name,
-                self.__file_view_switcher.buttons()),
-            None)
+        button = sequence.find(
+            self.__file_view_switcher.buttons(),
+            lambda x: x.arguments['type'] == type_name
+        )
+        assert(button is not None)
+
         if not button.isDown():
             button.setChecked(True)
 
@@ -82,17 +60,17 @@ class ExplorerWindow(QMainWindow):
 
         # back button
         back_button = image_widget.ImageButton('resources/Backward_32x.png')
-        back_button.clicked.connect(self.__go_backward)
+        back_button.clicked.connect(self.__model.go_backward)
         operation_layout.addWidget(back_button)
 
         # forward button
         forward_button = image_widget.ImageButton('resources/Forward_32x.png')
-        forward_button.clicked.connect(self.__go_forward)
+        forward_button.clicked.connect(self.__model.go_forward)
         operation_layout.addWidget(forward_button)
 
         # go up button
         up_button = image_widget.ImageButton('resources/Upload_32x.png')
-        up_button.clicked.connect(self.__go_up)
+        up_button.clicked.connect(self.__model.go_up)
         operation_layout.addWidget(up_button)
 
         # address bar
@@ -107,8 +85,7 @@ class ExplorerWindow(QMainWindow):
         address_text = QLineEdit()
         address_text.setMinimumWidth(200)
         address_text.returnPressed.connect(
-            lambda: self.change_directory(address_text.text())
-            # functools.partial(self.change_directory, address_text.text())
+            lambda: self.__model.change_directory(address_text.text())
         )
         address_layout.addWidget(address_text)
 
@@ -157,15 +134,11 @@ class ExplorerWindow(QMainWindow):
         root_layout.addWidget(splitter)
 
         dirtree_view = directory_tree.DirectoryTreeView(root_paths=filesystem.list_drives())
-        dirtree_view.item_selected.connect(
-            lambda path: self.change_directory(path)
-        )
+        dirtree_view.item_selected.connect(self.__model.change_directory)
         splitter.addWidget(dirtree_view)
 
         fileitem_list = file_list.FileListView()
-        fileitem_list.open_requested.connect(
-            lambda path: self.__select_path(path)
-        )
+        fileitem_list.open_requested.connect(self.__model.select_path)
         splitter.addWidget(fileitem_list)
 
         w = self.width()
@@ -197,53 +170,9 @@ class ExplorerWindow(QMainWindow):
         file_test_menu = QMenu('test', file_menu)
         file_menu.addMenu(file_test_menu)
 
-    def __go_backward(self):
-        self.__current_history_index -= 1
-        self.__update_view()
-
-    def __go_forward(self):
-        self.__current_history_index += 1
-        self.__update_view()
-
-    def __can_go_up(self):
-        current_path = self.__history[self.__current_history_index]
-        parent_path = os.path.dirname(current_path)
-        return current_path != parent_path
-
-    def __go_up(self):
-        current_path = self.__history[self.__current_history_index]
-        parent_path = os.path.dirname(current_path)
-        self.change_directory(parent_path)
-
     def __update_view(self):
-        directory = self.__history[self.__current_history_index]
+        directory = self.__model.current_directory
 
-        directories, files = filesystem.list_directories_and_files(
-            directory,
-            platform.FILESYSTEM_ENCODING)
-
-        self.__file_list.clear()
-        for path in directories:
-            self.__file_list.add_item(path)
-        for path in files:
-            self.__file_list.add_item(path)
-        self.__file_list.invalidate()
-
-        enable_backward = self.__current_history_index > 0
-        self.__back_button.setEnabled(enable_backward)
-
-        enable_forward = self.__current_history_index < len(self.__history) - 1
-        self.__forward_button.setEnabled(enable_forward)
-
-        enable_up = self.__can_go_up()
-        self.__up_button.setEnabled(enable_up)
-
+        self.__file_list.set_directory(directory)
         self.__address_text.setText(directory)
-
         self.__status_text.setText(u'{}個の項目'.format(self.__file_list.count))
-
-    def __select_path(self, path):
-        if os.path.isdir(path):
-            self.change_directory(path)
-        else:
-            subprocess.call('"{}" "{}"'.format(platform.FILEOPEN_COMMAND, path), shell=True)

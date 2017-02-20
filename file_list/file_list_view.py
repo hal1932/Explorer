@@ -1,6 +1,8 @@
 # encoding: utf-8
 from lib import *
 
+import platform
+
 import model
 import list_delegate
 import thumbnail_delegate
@@ -30,8 +32,10 @@ class FileListView(QListView):
     def clear(self):
         self.model().clear()
 
-    def add_item(self, item):
-        self.model().add_item(item)
+    def set_directory(self, directory):
+        self.clear()
+        self.model().set_directory(directory)
+        self.invalidate()
 
     def filter_items(self, needle):
         self.model().filter_items(needle)

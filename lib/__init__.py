@@ -4,6 +4,7 @@ from __future__ import print_function
 import qt
 import image_widget
 import filesystem
+import sequence
 
 from PySide.QtCore import *
 from PySide.QtGui import *

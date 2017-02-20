@@ -1,6 +1,8 @@
 # encoding: utf-8
 from lib import *
 
+import platform
+
 import os
 
 
@@ -36,8 +38,13 @@ class FileListModel(QAbstractListModel):
         self.__base_items = []
         self.__items = []
 
-    def add_item(self, item):
-        self.__base_items.append(item)
+    def set_directory(self, directory):
+        directories, files = filesystem.list_directories_and_files(
+            directory,
+            platform.FILESYSTEM_ENCODING)
+
+        self.__base_items.extend(directories)
+        self.__base_items.extend(files)
         self.__execute_filter()
 
     def filter_items(self, needle):

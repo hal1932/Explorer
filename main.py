@@ -9,7 +9,6 @@ import sys
 @entrypoint
 def main():
     window = explorer_window.ExplorerWindow(directory='D:\\yuta\\Desktop')
-    window.change_directory('D:\\tmp')
     window.show()
     return window
 

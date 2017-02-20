@@ -2,7 +2,6 @@
 from lib import *
 
 import model
-import delegate
 
 
 class DirectoryTreeView(QTreeView):
