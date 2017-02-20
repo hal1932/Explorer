@@ -14,14 +14,15 @@ class FileListDelegate(QItemDelegate):
         self.__thumbnail_cache = thumbnail_cache.ThumbnailCache()
 
     def paint(self, painter, option, index):
-        item = index.data(Qt.DisplayRole)
+        name = index.data(Qt.DisplayRole)
+        path = index.data(Qt.EditRole)
 
         image_rect = qt.resize_rect(option.rect, self.__thumbnail_size)
         name_rect = qt.move_rect(option.rect, QPoint(self.__thumbnail_size.width(), 0))
 
-        pixmap = self.__thumbnail_cache.get_cached_pixmap(item)
+        pixmap = self.__thumbnail_cache.get_cached_pixmap(path)
         if pixmap is None:
-            pixmap = self.__thumbnail_cache.load(item, self.__thumbnail_size)
+            pixmap = self.__thumbnail_cache.load(path, self.__thumbnail_size)
 
         painter.drawPixmap(image_rect, pixmap)
 
@@ -40,4 +41,4 @@ class FileListDelegate(QItemDelegate):
         pen = QPen(foreground_color)
         pen.setWidth(0)
         painter.setPen(pen)
-        painter.drawText(name_rect, Qt.AlignVCenter, item)
+        painter.drawText(name_rect, Qt.AlignVCenter, name)

@@ -27,7 +27,8 @@ class FileThumbnailDelegate(QItemDelegate):
         return self.__container_size
 
     def paint(self, painter, option, index):
-        path = index.data(Qt.DisplayRole)
+        name = index.data(Qt.DisplayRole)
+        path = index.data(Qt.EditRole)
 
         pixmap = self.__thumbnail_cache.get_cached_pixmap(path)
         if pixmap is None:
@@ -51,6 +52,6 @@ class FileThumbnailDelegate(QItemDelegate):
             option.rect.left(), option.rect.top() + self.__thumbnail_size.height(),
             self.__container_size.width(), 30)
         painter.setPen(None)
-        painter.drawText(name_rect, Qt.AlignCenter | Qt.AlignBottom, os.path.basename(path))
+        painter.drawText(name_rect, Qt.AlignCenter | Qt.AlignBottom, name)
 
 

@@ -1,6 +1,8 @@
 # encoding: utf-8
 from lib import *
 
+import os
+
 
 class FileListModel(QAbstractListModel):
 
@@ -24,6 +26,8 @@ class FileListModel(QAbstractListModel):
             return None
 
         if role == Qt.DisplayRole:
+            return os.path.basename(self.__items[index.row()])
+        elif role == Qt.EditRole:
             return self.__items[index.row()]
 
         return None
@@ -43,9 +47,10 @@ class FileListModel(QAbstractListModel):
     def __execute_filter(self, needle=None):
         if needle is None:
             needle = self.__needle
+        needle = needle.lower()
 
         if len(needle) > 0:
-            self.__items = filter(lambda path: needle in path, self.__base_items)
+            self.__items = filter(lambda path: needle in path.lower(), self.__base_items)
         else:
             self.__items = self.__base_items
 

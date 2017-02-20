@@ -24,7 +24,7 @@ class FileListView(QListView):
         self.setModel(model.FileListModel())
 
         self.doubleClicked.connect(
-            lambda index: self.open_requested.emit(index.data(Qt.DisplayRole))
+            lambda index: self.open_requested.emit(index.data(Qt.EditRole))
         )
 
     def clear(self):
