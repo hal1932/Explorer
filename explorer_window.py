@@ -52,8 +52,6 @@ class ExplorerWindow(QMainWindow):
         self.__history.append(directory)
         self.__current_history_index += 1
 
-        print(self.__history, self.__current_history_index)
-
         self.__update_view()
 
     def change_fileview_type(self, type_name):
@@ -96,6 +94,11 @@ class ExplorerWindow(QMainWindow):
         forward_button = image_widget.ImageButton('resources/Forward_32x.png')
         forward_button.clicked.connect(self.__go_forward)
         operation_layout.addWidget(forward_button)
+
+        # go up button
+        up_button = image_widget.ImageButton('resources/Upload_32x.png')
+        up_button.clicked.connect(self.__go_up)
+        operation_layout.addWidget(up_button)
 
         # address bar
         address_layout = QHBoxLayout()
@@ -175,6 +178,7 @@ class ExplorerWindow(QMainWindow):
 
         self.__back_button = back_button
         self.__forward_button = forward_button
+        self.__up_button = up_button
         self.__address_text = address_text
         self.__file_list = fileitem_list
         self.__status_text = status_text
@@ -197,6 +201,16 @@ class ExplorerWindow(QMainWindow):
     def __go_forward(self):
         self.__current_history_index += 1
         self.__update_view()
+
+    def __can_go_up(self):
+        current_path = self.__history[self.__current_history_index]
+        parent_path = os.path.dirname(current_path)
+        return current_path != parent_path
+
+    def __go_up(self):
+        current_path = self.__history[self.__current_history_index]
+        parent_path = os.path.dirname(current_path)
+        self.change_directory(parent_path)
 
     def __update_view(self):
         directory = self.__history[self.__current_history_index]
@@ -224,6 +238,9 @@ class ExplorerWindow(QMainWindow):
 
         enable_forward = self.__current_history_index < len(self.__history) - 1
         self.__forward_button.setEnabled(enable_forward)
+
+        enable_up = self.__can_go_up()
+        self.__up_button.setEnabled(enable_up)
 
         self.__address_text.setText(directory)
 
