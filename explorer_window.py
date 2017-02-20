@@ -1,7 +1,9 @@
 # encoding: utf-8
 from lib import *
 
+import platform
 import file_list
+import directory_tree
 
 import exceptions
 import glob
@@ -9,13 +11,6 @@ import os
 import functools
 import itertools
 import subprocess
-
-
-if sys.platform == 'win32':
-    FILESYSTEM_ENCODING = 'shift-jis'
-    FILEOPEN_COMMAND = 'explorer'
-else:
-    raise EnvironmentError('{} is not supported'.format(sys.platform))
 
 
 class ExplorerWindow(QMainWindow):
@@ -161,16 +156,20 @@ class ExplorerWindow(QMainWindow):
         splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         root_layout.addWidget(splitter)
 
-        directory_tree = QTreeView()
-        directory_tree.setMaximumWidth(200)
-        splitter.addWidget(directory_tree)
+        dirtree_view = directory_tree.DirectoryTreeView(root_paths=filesystem.list_drives())
+        dirtree_view.item_selected.connect(
+            lambda path: self.change_directory(path)
+        )
+        splitter.addWidget(dirtree_view)
 
         fileitem_list = file_list.FileListView()
-        fileitem_list.setMinimumWidth(200)
         fileitem_list.open_requested.connect(
             lambda path: self.__select_path(path)
         )
         splitter.addWidget(fileitem_list)
+
+        w = self.width()
+        splitter.setSizes([w / 3 * 1, w / 3 * 2])
 
         # status bar
         status_layout = QHBoxLayout()
@@ -183,6 +182,7 @@ class ExplorerWindow(QMainWindow):
         self.__forward_button = forward_button
         self.__up_button = up_button
         self.__address_text = address_text
+        self.__directory_tree = dirtree_view
         self.__file_list = fileitem_list
         self.__status_text = status_text
         self.__file_view_switcher = view_switcher
@@ -218,16 +218,9 @@ class ExplorerWindow(QMainWindow):
     def __update_view(self):
         directory = self.__history[self.__current_history_index]
 
-        directories = []
-        files = []
-        for path in glob.iglob(os.path.join(directory, '*')):
-            if not isinstance(path, unicode):
-                path = path.decode(FILESYSTEM_ENCODING)
-
-            if os.path.isdir(path):
-                directories.append(path)
-            else:
-                files.append(path)
+        directories, files = filesystem.list_directories_and_files(
+            directory,
+            platform.FILESYSTEM_ENCODING)
 
         self.__file_list.clear()
         for path in directories:
@@ -253,4 +246,4 @@ class ExplorerWindow(QMainWindow):
         if os.path.isdir(path):
             self.change_directory(path)
         else:
-            subprocess.call('"{}" "{}"'.format(FILEOPEN_COMMAND, path), shell=True)
+            subprocess.call('"{}" "{}"'.format(platform.FILEOPEN_COMMAND, path), shell=True)
