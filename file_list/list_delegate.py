@@ -1,6 +1,8 @@
 # encoding: utf-8
 from lib import *
 
+import os
+
 
 class FileListDelegate(QItemDelegate):
 
@@ -9,6 +11,16 @@ class FileListDelegate(QItemDelegate):
 
     def paint(self, painter, option, index):
         item = index.data(Qt.DisplayRole)
+
+        image_rect = qt.resize_rect(option.rect, QSize(16, 16))
+        name_rect = qt.move_rect(option.rect, QPoint(16, 0))
+
+        if os.path.isdir(item):
+            thumbnail_path = 'resources/Folder_16x.png'
+        else:
+            thumbnail_path = 'resources/FileSystemEditor_16x.png'
+        pixmap = QPixmap(thumbnail_path)
+        painter.drawPixmap(image_rect, pixmap)
 
         palette = option.palette
         if option.state & QStyle.State_Selected:
@@ -25,4 +37,4 @@ class FileListDelegate(QItemDelegate):
         pen = QPen(foreground_color)
         pen.setWidth(0)
         painter.setPen(pen)
-        painter.drawText(option.rect, Qt.AlignVCenter, item)
+        painter.drawText(name_rect, Qt.AlignVCenter, item)

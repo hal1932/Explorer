@@ -12,7 +12,7 @@ def get_file_icon(path):
 
 def move_rect(rect, position):
     return QRect(
-        position.x(), position.y(),
+        rect.x() + position.x(), rect.y() + position.y(),
         rect.width(), rect.height()
     )
 
