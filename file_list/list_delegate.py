@@ -8,8 +8,8 @@ import os
 
 class FileListDelegate(QItemDelegate):
 
-    def __init__(self, parent=None):
-        super(FileListDelegate, self).__init__(parent)
+    def __init__(self):
+        super(FileListDelegate, self).__init__()
         self.__thumbnail_size = QSize(16, 16)
         self.__thumbnail_cache = thumbnail_cache.ThumbnailCache()
 
@@ -26,19 +26,9 @@ class FileListDelegate(QItemDelegate):
 
         painter.drawPixmap(image_rect, pixmap)
 
-        palette = option.palette
-        if option.state & QStyle.State_Selected:
-            foreground_color = palette.color(QPalette.Active, QPalette.HighlightedText)
-            background_color = palette.color(QPalette.Active, QPalette.Highlight)
-        else:
-            foreground_color = palette.color(QPalette.Active, QPalette.Text)
-            background_color = None
-
-        if background_color is not None:
-            painter.setBrush(QBrush(background_color))
+        pen, brush = qt.get_text_decoration(option.palette, option.state)
+        if brush is not None:
+            painter.setBrush(brush)
             painter.drawRect(option.rect)
-
-        pen = QPen(foreground_color)
-        pen.setWidth(0)
         painter.setPen(pen)
         painter.drawText(name_rect, Qt.AlignVCenter, name)

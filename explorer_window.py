@@ -49,49 +49,46 @@ class ExplorerWindow(QMainWindow):
         root_widget = QWidget()
         self.setCentralWidget(root_widget)
 
-        root_layout = QVBoxLayout()
+        root_layout = qt.set_layout(root_widget, QVBoxLayout)
         root_layout.setAlignment(Qt.AlignTop)
         root_layout.setSpacing(3)
-        root_widget.setLayout(root_layout)
 
         # operation menu
-        operation_layout = QHBoxLayout()
-        root_layout.addLayout(operation_layout)
+        operation_layout = qt.add_layout(root_layout, QHBoxLayout)
 
         # back button
-        back_button = widget.ImageButton('resources/Backward_32x.png')
-        back_button.clicked.connect(self.__model.go_backward)
-        operation_layout.addWidget(back_button)
+        back_button = widget.ImageButton(
+            operation_layout,
+            'resources/Backward_32x.png',
+            self.__model.go_backward)
 
         # forward button
-        forward_button = widget.ImageButton('resources/Forward_32x.png')
-        forward_button.clicked.connect(self.__model.go_forward)
-        operation_layout.addWidget(forward_button)
+        forward_button = widget.ImageButton(
+            operation_layout,
+            'resources/Forward_32x.png',
+            self.__model.go_forward)
 
         # go up button
-        up_button = widget.ImageButton('resources/Upload_32x.png')
-        up_button.clicked.connect(self.__model.go_up)
-        operation_layout.addWidget(up_button)
+        up_button = widget.ImageButton(
+            operation_layout,
+            'resources/Upload_32x.png',
+            self.__model.go_up)
 
         # address bar
-        address_layout = QHBoxLayout()
+        address_layout = qt.add_layout(operation_layout, QHBoxLayout)
         address_layout.setSpacing(0)
-        operation_layout.addLayout(address_layout)
 
-        address_icon = widget.ImageLabel('resources/Folder_16x.png')
+        address_icon = widget.ImageLabel(address_layout, 'resources/Folder_16x.png')
         address_icon.setMargin(3)
-        address_layout.addWidget(address_icon)
 
-        address_text = QLineEdit()
+        address_text = qt.add_widget(address_layout, QLineEdit)
         address_text.setMinimumWidth(200)
         address_text.returnPressed.connect(
             lambda: self.__model.change_directory(address_text.text())
         )
-        address_layout.addWidget(address_text)
 
         # file view switcher
-        view_switcher_layout = QHBoxLayout()
-        operation_layout.addLayout(view_switcher_layout)
+        view_switcher_layout = qt.add_layout(operation_layout, QHBoxLayout)
 
         view_switcher = QButtonGroup()
         view_switcher.setExclusive(True)
@@ -104,7 +101,7 @@ class ExplorerWindow(QMainWindow):
             'thumbnail': 'resources/Image_32x.png',
         }
         for type_name, image_path in file_view_types.items():
-            button = widget.ImageButton(image_path)
+            button = widget.ImageButton(view_switcher, image_path, None)
             button.setCheckable(True)
             button.arguments = {'type': type_name}
 
@@ -112,50 +109,41 @@ class ExplorerWindow(QMainWindow):
             view_switcher_layout.addWidget(button)
 
         # search filter
-        search_layout = QHBoxLayout()
+        search_layout = qt.add_layout(operation_layout, QHBoxLayout)
         search_layout.setSpacing(0)
         search_layout.setContentsMargins(0, 0, 0, 0)
-        operation_layout.addLayout(search_layout)
 
-        search_text = QLineEdit()
+        search_text = qt.add_widget(search_layout, QLineEdit)
         search_text.setMaximumWidth(200)
         search_text.returnPressed.connect(
             lambda: self.__file_list.filter_items(search_text.text())
         )
-        search_layout.addWidget(search_text)
 
-        search_icon = widget.ImageLabel('resources/Search_16x.png')
+        search_icon = widget.ImageLabel(search_layout, 'resources/Search_16x.png')
         search_icon.setMargin(3)
-        search_layout.addWidget(search_icon)
 
         # file view
-        splitter = QSplitter(Qt.Horizontal)
+        splitter = qt.add_widget(root_layout, QSplitter, Qt.Horizontal)
         splitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        root_layout.addWidget(splitter)
 
-        dirtree_view = directory_tree.DirectoryTreeView(root_paths=filesystem.list_drives())
+        dirtree_view = directory_tree.DirectoryTreeView(
+            splitter, root_paths=filesystem.list_drives())
         dirtree_view.item_selected.connect(self.__model.change_directory)
-        splitter.addWidget(dirtree_view)
 
-        fileitem_list = file_list.FileListView()
+        fileitem_list = file_list.FileListView(splitter)
         fileitem_list.open_requested.connect(self.__model.select_path)
-        splitter.addWidget(fileitem_list)
 
         w = self.width()
         splitter.setSizes([w / 3 * 1, w / 3 * 2])
 
         # status bar
-        status_layout = QHBoxLayout()
-        root_layout.addLayout(status_layout)
-
-        status_text = QLabel()
-        status_layout.addWidget(status_text)
+        status_layout = qt.add_layout(root_layout, QHBoxLayout)
+        status_text = qt.add_widget(status_layout, QLabel)
 
         self.__back_button = back_button
         self.__forward_button = forward_button
         self.__up_button = up_button
         self.__address_text = address_text
-        self.__directory_tree = dirtree_view
         self.__file_list = fileitem_list
         self.__status_text = status_text
         self.__file_view_switcher = view_switcher

@@ -21,7 +21,8 @@ class FileListView(QListView):
         return self.__view_type
 
     def __init__(self, parent=None):
-        super(FileListView, self).__init__(parent)
+        widget.construct(self, parent)
+
         self.__view_type = None
         self.setModel(model.FileListModel())
 

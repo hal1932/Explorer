@@ -8,8 +8,8 @@ import os
 
 class FileListModel(QAbstractListModel):
 
-    def __init__(self, parent=None):
-        super(FileListModel, self).__init__(parent)
+    def __init__(self):
+        super(FileListModel, self).__init__()
 
         self.__base_items = None
         self.__items = None
@@ -24,13 +24,14 @@ class FileListModel(QAbstractListModel):
         if not index.isValid():
             return None
 
-        if index.row() < 0 or len(self.__items) <= index.row():
+        item_index = index.row()
+        if item_index < 0 or len(self.__items) <= item_index:
             return None
 
         if role == Qt.DisplayRole:
-            return os.path.basename(self.__items[index.row()])
+            return os.path.basename(self.__items[item_index])
         elif role == Qt.EditRole:
-            return self.__items[index.row()]
+            return self.__items[item_index]
 
         return None
 

@@ -19,8 +19,9 @@ class DirectoryTreeItem(QStandardItem):
             name = self.path
         return name
 
-    def __init__(self, parent=None, path=None):
-        super(DirectoryTreeItem, self).__init__(parent)
+    def __init__(self, path=None):
+        super(DirectoryTreeItem, self).__init__()
+
         self.__path = path
         self.setEditable(False)
 
@@ -31,15 +32,15 @@ class DirectoryTreeItem(QStandardItem):
         self.removeRows(0, self.rowCount())
 
         children = filesystem.list_directories(self.path, platform.FILESYSTEM_ENCODING)
-        self.appendRows([DirectoryTreeItem(path=path) for path in children])
+        self.appendRows([DirectoryTreeItem(path) for path in children])
 
 
 class DirectoryTreeModel(QStandardItemModel):
 
-    def __init__(self, parent=None, root_paths=[]):
-        super(DirectoryTreeModel, self).__init__(parent)
+    def __init__(self, root_paths=[]):
+        super(DirectoryTreeModel, self).__init__()
 
-        children = [DirectoryTreeItem(path=path) for path in root_paths]
+        children = [DirectoryTreeItem(path) for path in root_paths]
         self.invisibleRootItem().appendRows(children)
 
     def data(self, index, role=Qt.DisplayRole):
