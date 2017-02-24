@@ -8,7 +8,7 @@ import sys
 
 @entrypoint
 def main():
-    window = explorer_window.ExplorerWindow(directory='D:\\yuta\\Desktop')
+    window = explorer_window.ExplorerWindow(directory='D:\\yuta\\Pictures\\ScreenShot')
     window.show()
     return window
 

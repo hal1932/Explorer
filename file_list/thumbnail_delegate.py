@@ -10,17 +10,21 @@ import Queue
 
 class FileThumbnailDelegate(QItemDelegate):
 
+    request_repainting = Signal()
+
     def __init__(self):
         super(FileThumbnailDelegate, self).__init__()
 
-        self.__thumbnail_cache = thumbnail_cache.ThumbnailCache()
+        self.__thumbnail_cache = thumbnail_cache.ThumbnailCache(False)
+        # self.__thumbnail_cache = thumbnail_cache.ThumbnailCache(True)
+        self.__thumbnail_cache.load_item_async.connect(self.request_repainting)
 
         self.__thumbnail_size = None
         self.__container_size = None
         self.set_thumbnail_length(100)
 
     def set_thumbnail_length(self, edge_length):
-        self.__thumbnail_size = QSize(edge_length, edge_length - 3)
+        self.__thumbnail_size = QSize(edge_length - 3, edge_length - 3)
         self.__container_size = QSize(edge_length, edge_length + 30)
 
     def sizeHint(self, option, index):
@@ -33,6 +37,7 @@ class FileThumbnailDelegate(QItemDelegate):
         pixmap = self.__thumbnail_cache.get_cached_pixmap(path)
         if pixmap is None:
             pixmap = self.__thumbnail_cache.load(path, self.__thumbnail_size)
+            # self.__thumbnail_cache.load_async(path, self.__thumbnail_size)
 
         pen, brush = qt.get_text_decoration(option.palette, option.state)
         if brush is not None:

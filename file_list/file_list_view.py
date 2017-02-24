@@ -56,6 +56,7 @@ class FileListView(QListView):
             self.setSpacing(1)
         elif type_name == 'thumbnail':
             delegate = thumbnail_delegate.FileThumbnailDelegate()
+            delegate.request_repainting.connect(self.invalidate)
             delegate.set_thumbnail_length(100)
             self.setItemDelegate(delegate)
 
